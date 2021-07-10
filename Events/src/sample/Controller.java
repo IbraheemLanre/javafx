@@ -1,23 +1,33 @@
 package sample;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
 public class Controller {
     @FXML
     private TextField nameField;
+
     @FXML
     private Button helloButton;
+
     @FXML
     private Button byeButton;
 
     @FXML
-    public void init(){
+    private CheckBox ourCheckBox;
+
+    @FXML
+    private Label ourLabel;
+
+    @FXML
+    public void initialize(){
         helloButton.setDisable(true);
         byeButton.setDisable(true);
-
     }
 
     @FXML
@@ -27,6 +37,35 @@ public class Controller {
         }else if(e.getSource().equals(byeButton)){
             System.out.println("Saying Bye..., " + nameField.getText());
         }
+
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    String s = Platform.isFxApplicationThread() ? "UI Thread" : "Background App Thread";
+                    System.out.println("I'm going to sleep on the: " + s);
+                    Thread.sleep(10000);
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            String s = Platform.isFxApplicationThread() ? "UI Thread" : "Background App Thread";
+                            System.out.println("I'm updating the label on the: " + s);
+                            ourLabel.setText("We did something!");
+                        }
+                    });
+                }catch (InterruptedException event){
+                    // handles error
+                }
+            }
+        };
+
+        new Thread(task).start();
+
+        if(ourCheckBox.isSelected()){
+            nameField.clear();
+            helloButton.setDisable(true);
+            byeButton.setDisable(true);
+        }
     }
 
     @FXML
@@ -35,5 +74,9 @@ public class Controller {
         boolean disableButtons = text.isEmpty() || text.trim().isEmpty();
         helloButton.setDisable(disableButtons);
         byeButton.setDisable(disableButtons);
+    }
+
+    public void handleChange(){
+        System.out.println("The checkbox is " + (ourCheckBox.isSelected() ? "checked" : "not checked" ));
     }
 }
