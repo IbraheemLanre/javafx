@@ -32,17 +32,12 @@ public class TodoData {
         return todoItems;
     }
 
-    public void setTodoItems(List<TodoItem> todoItems) {
-        this.todoItems = todoItems;
-    }
-
     public void loadTodoItems() throws IOException {
         todoItems = FXCollections.observableArrayList();
         Path path = Paths.get(filename);
         BufferedReader br = Files.newBufferedReader(path);
 
         String input;
-
         try{
             while((input = br.readLine()) != null){
                 String[] itemPieces = input.split("\t");
