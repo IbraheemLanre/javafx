@@ -5,13 +5,14 @@ import com.ibraheem.todolist.datamodel.TodoItem;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 
-import java.time.LocalDate;
-import java.time.Month;
+import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Controller {
 
@@ -26,21 +27,10 @@ public class Controller {
     @FXML
     private Label deadlineLabel;
 
+    @FXML
+    private BorderPane mainBorderPane;
+
     public void initialize(){
-//        TodoItem item1 = new TodoItem("Mail birthday card", "Buy a 30th birthday card for Amina", LocalDate.of(2021, Month.SEPTEMBER, 14));
-//        TodoItem item2 = new TodoItem("Doctor's Appointment", "Get COVID vax at Jatkasaari", LocalDate.of(2021, Month.JULY, 30));
-//        TodoItem item3 = new TodoItem("Tax Office", "Visit tax office at Kluuvi on Monday", LocalDate.of(2021, Month.JULY, 12));
-//        TodoItem item4 = new TodoItem("KEG Email", "Reply to KEG email on PWA by Monday", LocalDate.of(2021, Month.JULY, 12));
-//        TodoItem item5 = new TodoItem("Send Money", "Send money for loan by Monday", LocalDate.of(2021, Month.SEPTEMBER, 12));
-//
-//        todoItems = new ArrayList<>();
-//        todoItems.add(item1);
-//        todoItems.add(item2);
-//        todoItems.add(item3);
-//        todoItems.add(item4);
-//        todoItems.add(item5);
-//
-//        TodoData.getInstance().setTodoItems(todoItems);
 
         todoListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TodoItem>() {
             @Override
@@ -60,14 +50,40 @@ public class Controller {
     }
 
     @FXML
+    public void showNewItemDialog(){
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.initOwner(mainBorderPane.getScene().getWindow());
+        dialog.setTitle("Add New Todo Item");
+        dialog.setHeaderText("Use this dialog to create a new todo item");
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setLocation(getClass().getResource("todoItemDialogue.fxml"));
+        try {
+            dialog.getDialogPane().setContent(fxmlLoader.load());
+        }catch (IOException e){
+            System.out.println("Couldn't load the dialog");
+            e.printStackTrace();
+            return;
+        }
+
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if(result.isPresent() && result.get() == ButtonType.OK) {
+            TodoItemDialogueController todoItemDialogueController = fxmlLoader.getController();
+            TodoItem newItem = todoItemDialogueController.processResults();
+            todoListView.getItems().setAll(TodoData.getInstance().getTodoItems());
+            todoListView.getSelectionModel().select(newItem);
+            System.out.println("OK pressed");
+        }else {
+            System.out.println("Cancel pressed");
+        }
+    }
+
+    @FXML
     public void handleClickListView(){
         TodoItem item = todoListView.getSelectionModel().getSelectedItem();
         itemDetailsTextArea.setText(item.getDetails());
         deadlineLabel.setText(item.getDeadline().toString());
-        //StringBuilder sb = new StringBuilder("Description: \n" + item.getDetails());
-        //sb.append("\n\n\n\n");
-        //sb.append("Due Date: ");
-        //sb.append(item.getDeadline().toString());
-        //itemDetailsTextArea.setText(sb.toString());
     }
 }

@@ -3,3 +3,4 @@ Doctor's Appointment	Get COVID vax at Jatkasaari	30-07-2021
 Tax Office	Visit tax office at Kluuvi on Monday	12-07-2021
 KEG Email	Reply to KEG email on PWA by Monday	12-07-2021
 Send Money	Send money for loan by Monday	12-09-2021
+My New Todo Item	This is a new todo item	15-07-2021
