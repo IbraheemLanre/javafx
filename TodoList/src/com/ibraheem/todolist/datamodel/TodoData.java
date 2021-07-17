@@ -82,5 +82,7 @@ public class TodoData {
         }
     }
 
-
+    public void deleteTodoItem(TodoItem todoItem){
+        todoItems.remove(todoItem);
+    }
 }

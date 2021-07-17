@@ -4,12 +4,17 @@ import com.ibraheem.todolist.datamodel.TodoData;
 import com.ibraheem.todolist.datamodel.TodoItem;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
+import javafx.util.Callback;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +35,22 @@ public class Controller {
     @FXML
     private BorderPane mainBorderPane;
 
+    @FXML
+    private ContextMenu listContextMenu;
+
     public void initialize(){
 
+        listContextMenu = new ContextMenu();
+        MenuItem deleteMenuItem = new MenuItem("Delete");
+        deleteMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                TodoItem todoItem = todoListView.getSelectionModel().getSelectedItem();
+                deleteItem(todoItem);
+            }
+        });
+
+        listContextMenu.getItems().addAll(deleteMenuItem);
         todoListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TodoItem>() {
             @Override
             public void changed(ObservableValue<? extends TodoItem> observableValue, TodoItem oldTodoItem, TodoItem newTodoItem) {
@@ -47,6 +66,37 @@ public class Controller {
         todoListView.setItems(TodoData.getInstance().getTodoItems());
         todoListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         todoListView.getSelectionModel().selectFirst();
+        todoListView.setCellFactory(new Callback<ListView<TodoItem>, ListCell<TodoItem>>() {
+            @Override
+            public ListCell<TodoItem> call(ListView<TodoItem> todoItemListView) {
+                ListCell<TodoItem> cell = new ListCell<TodoItem>(){
+
+                    @Override
+                    protected void updateItem(TodoItem todoItem, boolean b) {
+                        super.updateItem(todoItem, b);
+                        if(b){
+                            setText(null);
+                        }else{
+                            setText(todoItem.getShortDescription());
+                            if(todoItem.getDeadline().isBefore(LocalDate.now().plusDays(1))){
+                                setTextFill(Color.RED);
+                            }else if(todoItem.getDeadline().equals(LocalDate.now().plusDays(1))){
+                                setTextFill(Color.BROWN);
+                            }
+                        }
+                    }
+                };
+                cell.emptyProperty().addListener(
+                        (obs, wasEmpty, isNowEmpty)->{
+                            if(isNowEmpty){
+                                cell.setContextMenu(null);
+                            }else{
+                                cell.setContextMenu(listContextMenu);
+                            }
+                        });
+                return cell;
+            }
+        });
     }
 
     @FXML
@@ -81,5 +131,16 @@ public class Controller {
         TodoItem item = todoListView.getSelectionModel().getSelectedItem();
         itemDetailsTextArea.setText(item.getDetails());
         deadlineLabel.setText(item.getDeadline().toString());
+    }
+
+    public void deleteItem(TodoItem todoItem){
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Delete Todo Item");
+        alert.setHeaderText("Delete item: " + todoItem.getShortDescription());
+        alert.setContentText("Are you sure? Press OK to confirm or  cancel to Back out.");
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && (result.get() == ButtonType.OK)){
+            TodoData.getInstance().deleteTodoItem(todoItem);
+        }
     }
 }
