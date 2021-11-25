@@ -2,14 +2,17 @@ package com.example.newtaskexample;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.concurrent.Worker;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 
 public class HelloController {
-    private Task<ObservableList<String>> task;
 
     @FXML
     private ListView listView;
@@ -20,8 +23,10 @@ public class HelloController {
     @FXML
     private Label progressLabel;
 
+    private Service<ObservableList<String>> service;
+
     public void initialize(){
-        task = new Task<ObservableList<String>>() {
+        /*task = new Task<ObservableList<String>>() {
             @Override
             protected ObservableList<String> call() throws Exception {
                 String [] names = {
@@ -43,19 +48,40 @@ public class HelloController {
                 return employees;
             }
         };
+*/
+        service = new EmployeeService();
+        progressBar.progressProperty().bind(service.progressProperty());
+        progressLabel.textProperty().bind(service.messageProperty());
+        listView.itemsProperty().bind(service.valueProperty());
 
-        progressBar.progressProperty().bind(task.progressProperty());
-        progressLabel.textProperty().bind(task.messageProperty());
-        listView.itemsProperty().bind(task.valueProperty());
+        service.setOnRunning(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                progressBar.setVisible(true);
+                progressLabel.setVisible(true);
+            }
+        });
+
+        service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                progressBar.setVisible(false);
+                progressLabel.setVisible(false);
+            }
+        });
+
+        progressBar.setVisible(false);
+        progressLabel.setVisible(false);
+
     }
-
-
-   // @FXML
-    //private Label welcomeText;
 
     @FXML
     protected void onHelloButtonClick() {
-//        welcomeText.setText("Welcome to JavaFX Application!");
-        new Thread(task).start();
+        if(service.getState() == Worker.State.SUCCEEDED){
+            service.reset();
+            service.start();
+        }else if(service.getState() == Worker.State.READY){
+            service.start();
+        }
     }
 }
