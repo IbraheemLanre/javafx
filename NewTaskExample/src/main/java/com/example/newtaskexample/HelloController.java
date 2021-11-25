@@ -54,7 +54,7 @@ public class HelloController {
         progressLabel.textProperty().bind(service.messageProperty());
         listView.itemsProperty().bind(service.valueProperty());
 
-        service.setOnRunning(new EventHandler<WorkerStateEvent>() {
+/*        service.setOnRunning(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
                 progressBar.setVisible(true);
@@ -71,7 +71,10 @@ public class HelloController {
         });
 
         progressBar.setVisible(false);
-        progressLabel.setVisible(false);
+        progressLabel.setVisible(false);*/
+
+        progressBar.visibleProperty().bind(service.runningProperty());
+        progressLabel.visibleProperty().bind(service.runningProperty());
 
     }
 
