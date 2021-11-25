@@ -6,6 +6,7 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.example.newtaskexample.HelloController">
     <padding>
@@ -15,4 +16,6 @@
     <Label fx:id="welcomeText"/>
     <Button text="Get Employee Names!" onAction="#onHelloButtonClick"/>
     <ListView fx:id="listView" VBox.vgrow="ALWAYS"/>
+    <ProgressBar fx:id="progressBar" VBox.vgrow="ALWAYS"/>
+    <Label fx:id="progressLabel"  VBox.vgrow="ALWAYS"/>
 </VBox>
